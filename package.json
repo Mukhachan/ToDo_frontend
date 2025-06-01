@@ -12,13 +12,16 @@
     "@react-router/node": "^7.5.3",
     "@react-router/serve": "^7.5.3",
     "isbot": "^5.1.27",
+    "js-cookie": "^3.0.5",
     "react": "^19.1.0",
+    "react-cookie": "^8.0.1",
     "react-dom": "^19.1.0",
     "react-router": "^7.5.3"
   },
   "devDependencies": {
     "@react-router/dev": "^7.5.3",
     "@tailwindcss/vite": "^4.1.4",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
@@ -26,5 +29,6 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }
