@@ -41,9 +41,9 @@ const mockRegister = async (email: string, password: string): Promise<User> => {
     'Content-Type': 'application/json;charset=utf-8'
     },
     body: JSON.stringify({
-            "email" : email,
-            "password" : password
-        })
+      email: email,
+      password: password,
+    })
   });
   const data = await response.json()
   if (password.length < 6) {
@@ -52,11 +52,11 @@ const mockRegister = async (email: string, password: string): Promise<User> => {
   else if (response.status != 200) {
     throw new Error(data.detail)
   }
-  return { email, token: "" };
+  return await mockLogin(email, password);
 };
 
 const Modal: React.FC<{
-  isOpen: boolean;
+  isOpen: boolean | null;
   onClose: () => void;
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (email: string, password: string) => Promise<void>;
@@ -252,7 +252,7 @@ const getUser = async (sessionId: string): Promise<any> => {
 const AuthSection = () => {
   const sessionId = Cookies.get("sessionId")
 
-  const [isModalOpen, setIsModalOpen] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean | null>(null);
   const [profile, setProfile] = useState<User | null>(null);
   const [error, setError] = useState("");
   
@@ -306,7 +306,6 @@ const AuthSection = () => {
       const user = await mockRegister(email, password);
       if (user.token) {
         setProfile(user);
-        setIsModalOpen(false);
         Cookies.set('sessionId', user.token, {
             expires: 14, 
             secure: false, // Только HTTPS (обязательно для прода)
@@ -314,6 +313,7 @@ const AuthSection = () => {
             path: '/', // Доступ на всех страницах сайта
         }); 
       }
+      setIsModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");
       throw err;

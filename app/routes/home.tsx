@@ -3,7 +3,6 @@ import { Header } from "~/components/Header";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 
-
 const DOMAIN = import.meta.env.VITE_API_DOMAIN
 
 export function meta({}: Route.MetaArgs) {
@@ -13,21 +12,23 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-const getTasks = async (): Promise<{ [key: string]: any }> => {
+const getTasks = async (sorting: string): Promise<{ [key: string]: any }> => {
   const authToken = Cookies.get('sessionId')
 
   if (authToken){ 
-    const response = await fetch(`http://${DOMAIN}/tasks`,{
+    const response = await fetch(`http://${DOMAIN}/tasks?sorting=${sorting}`,{
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
+        // 'Authorization': `Bearer ${authToken}`
         'Authorization': `Bearer ${authToken}`
-      }
+      },
       }
     )
+    const data = await response.json()
     return {
       state: response.status,
-      data: await response.json()
+      data: data
     };}
   else {
     return {
@@ -69,29 +70,44 @@ const deleteTask = async (id: string) => {
 }
 
 const Save: React.FC = () => {
-  const [tasks, setTasks] = useState({});
+  const [text, setText] = useState("Добавить");
+
+  const addTask = async () => {
+    const response = await fetch(`http://${DOMAIN}/tasks/`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Cookies.get('sessionId')}`
+      },
+      body : JSON.stringify({
+        title : "",
+        description : "",
+        status : false
+      })
+    })
+  }
+
 
   return (
     <button
           className="bg-blue-400 hover:bg-blue-500 text-gray-900 font-bold py-2 px-4 rounded"
-        > Сохранить
+          onClick={() => {addTask()}}
+        > {text}
     </button>
   )
 }
 
 
-
-
 export default function Home() {
   const [tasks, setTasks] = useState<{ [key: string]: any } | null>(null);
   const [tasks_state, setTasksState] = useState({});
-  
+  const [sorting, setSorting] = useState('ASC');
+
   const updateTask = async (taskId: string, updatedData: any) => {
     await saveTask(taskId, updatedData);
-    console.log(tasks)
   };  
   const fetchTasks = async () => {
-      const data = await getTasks();
+      const data = await getTasks(sorting);
       setTasks(data.data);
       setTasksState(data.state);
   };
@@ -153,9 +169,25 @@ export default function Home() {
                   <td className="border p-2">{task.created_at}</td>
                   <td className="border p-2">{
                     task.status ? (
-                      <input type="checkbox" name="" id={task.id} value={task.status} checked/>
+                      <input type="checkbox" onClick={() => {updateTask(
+                        task.id, 
+                        { 
+                          num: task.id,
+                          title: task.value,
+                          description: task.description,
+                          status: false,
+                        }
+                      )}  } id={task.id} value={task.status} checked/>
                     ) : (
-                      <input type="checkbox" name="" id={task.id} value={task.status}/>
+                      <input type="checkbox" onClick={() => {updateTask(
+                        task.id, 
+                        { 
+                          num: task.id,
+                          title: task.value,
+                          description: task.description,
+                          status: true,
+                        }
+                      )}  } id={task.id} value={task.status}/>
                     )
                   }
                     </td>
